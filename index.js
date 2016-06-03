@@ -1,4 +1,7 @@
 var fs = require('fs')
+var EventEmitter = require('events')
+var util = require('util')
+var inherits = util.inherits /*para implementar la suerte de herencia entre funciones - inherit nodejs doc*/
 
 /*creando nuestro propio read file async - receta para hacer funciones asincronicas*/
 function readFileText (name, cb) {
@@ -13,15 +16,43 @@ function readFileText (name, cb) {
 	})
 }
 
-readFileText('./lorem.txt', function (content) {
-	console.log(content)
-})
-console.log('Hola Platzi')
+/*creando clase ecma5 - implementacion de la clase*/
+function TextReader(name) {
+	// constructor
+	/*class TextReader heredando las propiedades de eventEmitter con lo cual esta class se va a convertir en una clase que emitira eventos*/
+	EventEmitter.call(this)  /*llamando al constructor de EventEmitter y paso por parametro la propia clase para que se inicialize la clase de EventEmitter*/
+	this.name = name
+}
 
+/*copia las propiedades de eventEmitter dentro de TextReader
+ una de las propiedades que se copia es emit que es una function que me permite emitir un evento */
+inherits(TextReader, EventEmitter)
+
+/*añadiendo metodo read a class TextReader*/
+TextReader.prototype.read = function () {
+	/*como implemento una function en el prototype de TextReader el this refiere a la instancia de TextReader que estoy ejecutando*/
+	var self = this
+	readFileText(this.name, function (content) { 
+		self.emit('end', content) /*emite evento - parametros: nombre evento y lo que le paso al evento*/
+	})  
+}
+
+//////////////////////////////////////////
+
+/*uso de la clase*/
+
+
+/*instancio textReader y le paso el nombre del archivo a leer*/
 var reader = new TextReader('./lorem.txt')
 
-reader.on('end', function () {
-	
+/*suscribirme al evento end*/
+reader.on('end', function (content) {
+	console.log(content);
 })
 
+/*comienza la lectura del archivo*/
 reader.read()
+
+/*recomendable el anterior orden: instanciar, suscribirse y llamar a read*/
+
+console.log('Hola Platzi')
