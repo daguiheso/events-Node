@@ -23,3 +23,5 @@ var reader = new TextReader('./lorem.txt')
 reader.on('end', function () {
 	
 })
+
+reader.read()
